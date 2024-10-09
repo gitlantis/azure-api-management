@@ -7,8 +7,8 @@ resource "azurerm_api_management" "api_management" {
   name                = "api-manage-${var.resource_group.name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  publisher_name      = "Gitlantis"
-  publisher_email     = "asliddin_oripov@epam.com"
+  publisher_name      = var.publisher_name
+  publisher_email     = var.publisher_email
   sku_name            = "Developer_1"
 }
 
