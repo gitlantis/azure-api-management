@@ -2,7 +2,8 @@ name: 'Terraform'
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+    - "main" 
   pull_request:
 
 jobs:
@@ -14,6 +15,9 @@ jobs:
       ARM_CLIENT_SECRET: ${{secrets.AZURE_SECRET}}
       ARM_SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARM_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+      PUBLISHER_NAME: ${{ vars.PUBLISHER_NAME }}
+      PUBLISHER_EMAIL: ${{ vars.PUBLISHER_EMAIL }}
+
     environment: dev
 
     defaults:
@@ -41,8 +45,7 @@ jobs:
         run: terraform init -backend-config="dev.backend.tfvars"
         
       - name: Terraform Plan
-        run: terraform plan -input=false
+        run: terraform plan -var "publisher_email=$PUBLISHER_EMAIL" -var "publisher_name=$PUBLISHER_NAME" -input=false 
   
       - name: Terraform Apply
-        #if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -var "publisher_email=$PUBLISHER_EMAIL" -var "publisher_name=$PUBLISHER_NAME" -auto-approve -input=false

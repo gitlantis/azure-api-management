@@ -10,3 +10,13 @@ variable "base_url" {
   description = "value"
   default     = "https://api.restful-api.dev"
 }
+
+variable "publisher_email" {
+  description = "publisher email from github variabeles"
+  default     = ""
+}
+
+variable "publisher_name" {
+  description = "publisher name from github variables"
+  default     = ""
+}
