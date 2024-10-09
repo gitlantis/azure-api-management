@@ -24,13 +24,13 @@ resource "azurerm_api_management_api" "api" {
 }
 
 resource "azurerm_api_management_api_operation" "get_operation" {
-  operation_id        = "GetUser"
+  operation_id        = "GetObject"
   api_name            = azurerm_api_management_api.api.name
   api_management_name = azurerm_api_management.api_management.name
   resource_group_name = azurerm_resource_group.rg.name
-  display_name        = "Get user info"
+  display_name        = "Get object info github"
   method              = "GET"
-  url_template        = "/getuser/{id}"
+  url_template        = "/getobj/{id}"
 
   template_parameter {
     name        = "id"
@@ -46,16 +46,16 @@ resource "azurerm_api_management_api_operation" "get_operation" {
 }
 
 resource "azurerm_api_management_api_operation" "post_operation" {
-  operation_id        = "login"
+  operation_id        = "SetObject"
   api_name            = azurerm_api_management_api.api.name
   api_management_name = azurerm_api_management.api_management.name
   resource_group_name = azurerm_resource_group.rg.name
-  display_name        = "Get JWT token for authorization"
+  display_name        = "Set object info"
   method              = "POST"
-  url_template        = "/login"
+  url_template        = "/setobj"
 
   request {
-    description = "login trquest"
+    description = "object set rquest"
     representation {
       content_type = "application/json"
     }
@@ -78,36 +78,35 @@ resource "azurerm_api_management_api_operation_policy" "get_policy" {
     <inbound>
         <set-variable name="guid" value="@(context.Request.MatchedParameters["id"])" />
 
-        <return-response>
-            <set-status code="200" reason="OK" />
+        <send-request mode="new" timeout="20" response-variable-name="blobdata" ignore-error="false">
+            <set-url>@{
+                return "${var.base_url}/objects/"+(string)context.Variables["guid"];
+            }</set-url>
+            <set-method>GET</set-method>
             <set-header name="Content-Type" exists-action="override">
                 <value>application/json</value>
             </set-header>
-            <set-body>@{
-                return new JObject(
-                    new JProperty("message", "This is a simple echo response"),
-                    new JProperty("status", "success"),
-                    new JProperty("id", context.Variables["guid"])
-                ).ToString();
-            }</set-body>
+            <set-header name="User-Agent" exists-action="override">
+                <value>Mozilla/5.0</value>
+            </set-header>
+        </send-request>
+        
+        <return-response>
+            <set-status code="200" reason="OK" />
+            <set-body>@($"{((IResponse)context.Variables["blobdata"]).Body.As<JObject>() }")</set-body>
         </return-response>
         <base />
-
     </inbound>
-
     <backend>
         <base />
     </backend>
-
     <outbound>
         <base />
     </outbound>
-
     <on-error>
         <base />
     </on-error>
 </policies>
-
 XML
 }
 
@@ -121,34 +120,36 @@ resource "azurerm_api_management_api_operation_policy" "post_policy" {
 <policies>
     <inbound>
         <set-variable name="body" value="@(context.Request.Body.As<string>(preserveContent: true))" />
-        
+
+        <send-request mode="new" timeout="20" response-variable-name="blobdata" ignore-error="false">
+            <set-url>${var.base_url}/objects</set-url>
+            <set-method>POST</set-method>
+            <set-header name="Content-Type" exists-action="override">
+                <value>application/json</value>
+            </set-header>
+            <set-body>@{
+                return (string)context.Variables["body"]; 
+            }</set-body>
+        </send-request>
+
         <return-response>
             <set-status code="200" reason="OK" />
             <set-header name="Content-Type" exists-action="override">
                 <value>application/json</value>
             </set-header>
-            <set-body>@{
-                return new JObject(
-                    new JProperty("message", "This is a simple echo response"),
-                    new JProperty("status", "success"),
-                    new JProperty("body", context.Variables["body"])
-                ).ToString();
-            }</set-body>
+            <set-body>@($"{((IResponse)context.Variables["blobdata"]).Body.As<JObject>() }")</set-body>
         </return-response>
         <base />
     </inbound>
-
     <backend>
         <base />
     </backend>
-
     <outbound>
-        <base />
         <set-header name="Content-Type" exists-action="override">
             <value>application/json</value>
         </set-header>
+        <base />
     </outbound>
-
     <on-error>
         <base />
     </on-error>
