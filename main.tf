@@ -50,7 +50,7 @@ resource "azurerm_api_management_api_operation" "post_operation" {
   api_name            = azurerm_api_management_api.api.name
   api_management_name = azurerm_api_management.api_management.name
   resource_group_name = azurerm_resource_group.rg.name
-  display_name        = "Set object info from github"
+  display_name        = "Set object ${var.publisher_email}"
   method              = "POST"
   url_template        = "/setobj"
 
