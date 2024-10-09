@@ -29,16 +29,16 @@ jobs:
         with:
           terraform_version: 1.6.4
 
+      - name: Azure Login action
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
       - name: Terraform Format
         run: terraform fmt -check
 
       - name: Terraform init
         run: terraform init -backend-config="dev.backend.tfvars"
-
-      - name: Azure Login action
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
         
       - name: Terraform Plan
         run: terraform plan -input=false
